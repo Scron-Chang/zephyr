@@ -94,6 +94,33 @@ extern "C" {
 #define I2C_MSG_RECV_LEN		0x0400	
 
 /**
+ * @brief Complete I2C DT information
+ *
+ * @param bus is the I2C bus
+ * @param addr is the target address
+ */
+struct i2c_dt_spec {
+	const struct device *bus;
+	uint16_t addr;
+};
+
+/**
+ * @brief Structure initializer for i2c_dt_spec from devicetree (on I2C bus)
+ *
+ * This helper macro expands to a static initializer for a <tt>struct
+ * i2c_dt_spec</tt> by reading the relevant bus and address data from
+ * the devicetree.
+ *
+ * @param node_id Devicetree node identifier for the I2C device whose
+ *                struct i2c_dt_spec to create an initializer for
+ */
+#define I2C_DT_SPEC_GET_ON_I2C(node_id) \
+	{\
+		.bus = DEVICE_DT_GET(DT_BUS(node_id)), \
+		.addr = DT_REG_ADDR(node_id) \
+	}
+
+/**
  * @brief One I2C Message.
  *
  * This defines one I2C message to transact on the I2C bus.
@@ -530,6 +557,25 @@ static inline int i2c_write(const struct device *dev, const uint8_t *buf,
 }
 
 /**
+ * @brief Write a set amount of data to an I2C device.
+ *
+ * This is equivalent to:
+ *
+ *     i2c_write(spec->bus, buf, num_bytes, spec->addr);
+ *
+ * @param spec I2C specification from devicetree.
+ * @param buf Memory pool from which the data is transferred.
+ * @param num_bytes Number of bytes to write.
+ *
+ * @return a value from i2c_write()
+ */
+static inline int i2c_write_dt(const struct i2c_dt_spec *spec,
+			       const uint8_t *buf, uint32_t num_bytes)
+{
+	return i2c_write(spec->bus, buf, num_bytes, spec->addr);
+}
+
+/**
  * @brief Read a set amount of data from an I2C device.
  *
  * This routine reads a set amount of data synchronously.
@@ -617,6 +663,29 @@ static inline int i2c_burst_read(const struct device *dev,
 	return i2c_write_read(dev, dev_addr,
 			      &start_addr, sizeof(start_addr),
 			      buf, num_bytes);
+}
+
+/**
+ * @brief Read multiple bytes from an internal address of an I2C device.
+ *
+ * This is equivalent to:
+ *
+ *     i2c_burst_read(spec->bus, spec->addr, start_addr, buf, num_bytes);
+ *
+ * @param spec I2C specification from devicetree.
+ * @param start_addr Internal address from which the data is being read.
+ * @param buf Memory pool that stores the retrieved data.
+ * @param num_bytes Number of bytes to read.
+ *
+ * @return a value from i2c_burst_read()
+ */
+static inline int i2c_burst_read_dt(const struct i2c_dt_spec *spec,
+				    uint8_t start_addr,
+				    uint8_t *buf,
+				    uint32_t num_bytes)
+{
+	return i2c_burst_read(spec->bus, spec->addr,
+			      start_addr, buf, num_bytes);
 }
 
 /**
