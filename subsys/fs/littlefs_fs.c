@@ -13,7 +13,9 @@
 #include <fs/fs.h>
 #include <fs/fs_sys.h>
 
-#define LFS_LOG_REGISTER
+#include <logging/log.h>
+LOG_MODULE_REGISTER(littlefs_fs, CONFIG_FS_LOG_LEVEL);
+
 #include <lfs_util.h>
 
 #include <lfs.h>
