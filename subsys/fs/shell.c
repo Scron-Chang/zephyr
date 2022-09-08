@@ -563,6 +563,29 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_fs_mount,
 );
 #endif
 
+static int cmd_size(const struct shell *shell, size_t argc, char **argv)
+{
+	int err;
+	//char path[MAX_PATH_LEN];
+	struct fs_dirent dirent = {0};
+
+	//create_abs_path(argv[1], path, sizeof(path));
+
+	if ( (err = fs_stat(argv[1], &dirent)) < 0) {
+		shell_error(shell, "[%d]Fail to get info of %s", err, argv[1]);
+		return -ENOEXEC;
+	}
+
+	shell_error(shell,
+		"[%d]%s:\"%s\" size is %u"
+		, err
+		, dirent.type == FS_DIR_ENTRY_FILE ? "File" : "Dir"
+		, dirent.name
+		, dirent.size);
+
+	return 0;
+}
+
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_fs,
 	SHELL_CMD(cd, NULL, "Change working directory", cmd_cd),
 	SHELL_CMD(ls, NULL, "List files in current directory", cmd_ls),
@@ -581,6 +604,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_fs,
 	SHELL_CMD_ARG(statvfs, NULL, "Show file system state", cmd_statvfs, 2, 0),
 	SHELL_CMD_ARG(trunc, NULL, "Truncate file", cmd_trunc, 2, 255),
 	SHELL_CMD_ARG(write, NULL, "Write file", cmd_write, 3, 255),
+	// Debug commands
+	SHELL_CMD_ARG(size, NULL, "Create directory", cmd_size, 2, 0),
+	// End of debug commands
 	SHELL_SUBCMD_SET_END
 );
 
