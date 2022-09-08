@@ -516,7 +516,7 @@ static int littlefs_stat(struct fs_mount_t *mountp,
 
 	fs_lock(fs);
 
-	struct lfs_info info;
+	struct lfs_info info = { 0 };
 	int ret = lfs_stat(&fs->lfs, path, &info);
 
 	fs_unlock(fs);
