@@ -566,10 +566,10 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_fs_mount,
 static int cmd_size(const struct shell *shell, size_t argc, char **argv)
 {
 	int err;
-	//char path[MAX_PATH_LEN];
+	char path[MAX_PATH_LEN];
 	struct fs_dirent dirent = {0};
 
-	//create_abs_path(argv[1], path, sizeof(path));
+	create_abs_path(argv[1], path, sizeof(path));
 
 	if ( (err = fs_stat(argv[1], &dirent)) < 0) {
 		shell_error(shell, "[%d]Fail to get info of %s", err, argv[1]);
@@ -577,11 +577,52 @@ static int cmd_size(const struct shell *shell, size_t argc, char **argv)
 	}
 
 	shell_error(shell,
-		"[%d]%s:\"%s\" size is %u"
-		, err
+		"%s: \"%s\" size is %u"
 		, dirent.type == FS_DIR_ENTRY_FILE ? "File" : "Dir"
 		, dirent.name
 		, dirent.size);
+
+	return 0;
+}
+
+static int cmd_write_4K_file(const struct shell *shell, size_t argc, char **argv)
+{
+	char path[MAX_PATH_LEN];
+	const int data_len = 128;
+	uint8_t data[data_len];
+	struct fs_file_t file;
+	int err;
+
+	create_abs_path(argv[1], path, sizeof(path));
+
+	for (size_t i = 0; i < data_len; i++)
+	{
+		data[i] = i % 10;
+	}
+
+	printf(
+		"File: %s\n"
+		"Data size per time: %d\n"
+		, path, data_len);
+
+	fs_file_t_init(&file);
+	err = fs_open(&file, path, FS_O_CREATE | FS_O_WRITE);
+	if (err) {
+		shell_error(shell, "Failed to open %s (%d)", path, err);
+		return -ENOEXEC;
+	}
+
+	for (size_t i = 0; i < 65536/data_len; i++)
+	{
+		err = fs_write(&file, data, data_len);
+		if (err < 0) {
+			shell_error(shell, "Failed to write %s (%d)", path, err);
+			fs_close(&file);
+			return -ENOEXEC;
+		}
+	}
+
+	fs_close(&file);
 
 	return 0;
 }
@@ -605,7 +646,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_fs,
 	SHELL_CMD_ARG(trunc, NULL, "Truncate file", cmd_trunc, 2, 255),
 	SHELL_CMD_ARG(write, NULL, "Write file", cmd_write, 3, 255),
 	// Debug commands
-	SHELL_CMD_ARG(size, NULL, "Create directory", cmd_size, 2, 0),
+	SHELL_CMD_ARG(size, NULL, "Get the size of file or directory", cmd_size, 2, 0),
+	SHELL_CMD_ARG(mkfile, NULL, "Create a 4K size file.", cmd_write_4K_file, 2, 0),
 	// End of debug commands
 	SHELL_SUBCMD_SET_END
 );
