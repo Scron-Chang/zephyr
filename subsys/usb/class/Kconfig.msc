@@ -38,8 +38,7 @@ config MASS_STORAGE_INQ_REVISION
 
 config MASS_STORAGE_BULK_EP_MPS
 	int
-	default 64
-	range 8 64
+	default 4096
 	help
 	  Mass storage device class bulk endpoints size
 

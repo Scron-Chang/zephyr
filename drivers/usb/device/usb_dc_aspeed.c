@@ -837,7 +837,7 @@ int usb_dc_ep_check_cap(const struct usb_dc_ep_cfg_data * const cfg)
 		}
 	}
 
-	if (cfg->ep_mps < 1 || cfg->ep_mps > 1024 ||
+	if (cfg->ep_mps < 1 || cfg->ep_mps > 4096 ||
 	    (cfg->ep_type == USB_DC_EP_CONTROL && cfg->ep_mps > 64)) {
 		LOG_ERR("invalid endpoint size");
 		return -1;
