@@ -393,7 +393,7 @@ static int fatfs_statvfs(struct fs_mount_t *mountp,
 	 * _MIN_SS holds the sector size. It is one of the configuration
 	 * constants used by the FS module
 	 */
-	stat->f_bsize = _MIN_SS;
+	stat->f_bsize = FF_MIN_SS;
 	stat->f_frsize = fs->csize * stat->f_bsize;
 	stat->f_blocks = (fs->n_fatent - 2);
 
@@ -416,10 +416,10 @@ static int fatfs_mount(struct fs_mount_t *mountp)
 	/* If no file system found then create one */
 	if (res == FR_NO_FILESYSTEM &&
 	    (mountp->flags & FS_MOUNT_FLAG_NO_FORMAT) == 0) {
-		uint8_t work[_MAX_SS];
+		uint8_t work[FF_MAX_SS];
 
 		res = f_mkfs(&mountp->mnt_point[1],
-				(FM_FAT | FM_SFD), 0, work, sizeof(work));
+				 0, work, sizeof(work));
 		if (res == FR_OK) {
 			res = f_mount((FATFS *)mountp->fs_data,
 					&mountp->mnt_point[1], 1);
